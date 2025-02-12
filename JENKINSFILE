@@ -1,1 +1,82 @@
 
+pipeline {
+    agent any
+    stages {
+        stage('Get Code') {
+            steps {
+                //Obtener código del repo
+                git branch: 'develop', url: 'https://github.com/juanjomalouu/UNIR-AWS'
+                sh 'dir'
+                echo WORKSPACE
+            }
+        }
+        
+        stage('Static Test') {
+            steps {
+                println "=========================================== FLAKE8 ==========================================="
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                      sh '''
+                        ls -l /home/ubuntu/.local/bin/flake8
+                        export PATH=$PATH:/home/ubuntu/.local/bin
+                        flake8 --exit-zero --format=pylint src
+                    '''
+                    recordIssues( 
+                        tools: [flake8(name: 'Flake8', pattern: 'flake8.out')], 
+                        qualityGates: [], 
+                        ignoreQualityGate: true
+                    )
+                }
+                println "=========================================== BANDIT ==========================================="
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh '''
+                        ls -l /home/ubuntu/.local/bin/flake8
+                        export PATH=/home/ubuntu/.local/bin
+                        bandit --exit-zero -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
+                    '''
+                    recordIssues(
+                        tools: [bandit(name: 'Bandit', pattern: 'bandit.out')],
+                        qualityGates: [],
+                        ignoreQualityGate: true
+                    )
+                }
+            }
+        }
+        
+        
+        
+        stage('Deploy')
+        {
+            steps
+            {
+                sh '''
+                    sam build
+                    sam deploy --config-file samconfig.toml --profile staging
+                '''
+            }
+        }
+        
+        stage('Rest Test')
+        {
+            steps
+            {
+                sh '''
+                    echo hola
+                
+                '''
+            }
+        }
+        
+        stage('Promote')
+        {
+            //Marcar version como Release
+            steps
+            {
+                sh '''
+                    echo hola
+                '''
+            }
+        }
+        
+
+    }
+}
