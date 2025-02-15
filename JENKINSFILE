@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
     stages {
@@ -34,7 +33,7 @@ pipeline {
                         bandit --exit-zero -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
                     '''
                     recordIssues(
-                        tools: [bandit(name: 'Bandit', pattern: 'bandit.out')],
+                        tools: [pyLint(name: 'Bandit', pattern: 'bandit.out')], 
                         qualityGates: [],
                         ignoreQualityGate: true
                     )
@@ -50,7 +49,7 @@ pipeline {
             {
                 sh '''
                     sam build
-                    sam deploy --config-file samconfig.toml --profile staging
+                    sam deploy
                 '''
             }
         }
