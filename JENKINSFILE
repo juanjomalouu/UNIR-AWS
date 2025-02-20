@@ -9,6 +9,7 @@ pipeline {
                 echo WORKSPACE
             }
         }
+        
         stage('Deploy')
         {
             steps
@@ -38,16 +39,19 @@ pipeline {
             //Marcar version como Release
             steps
             {
-                withCredentials([usernamePassword(credentialsId: 'a2b942a5-c878-4234-a8a1-d518bd74e290', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {   
+                withCredentials([string(credentialsId: 'GIT_PAT', variable: 'GIT_PAT')]) {   
                     sh '''
                         git config --global user.email "abadjuanjo@hotmail.com"
                         git config --global user.name "juanjomalouu"
+                        git config --global merge.ours.driver true
                         git config pull.rebase false
-                        git remote set-url origin https://juanjomalouu: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@github.com/juanjomalouu/UNIR-AWS.git
+                        git remote set-url origin https://juanjomalouu:${GIT_PAT}@github.com/juanjomalouu/UNIR-AWS.git
                 
-              
+                    
                         git checkout production
+                        
                         git pull origin production
+                        
                         git merge --no-ff master -m "Promoting master to production"
                         git push origin production
                     '''
