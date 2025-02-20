@@ -4,47 +4,11 @@ pipeline {
         stage('Get Code') {
             steps {
                 //Obtener código del repo
-                git branch: 'develop', url: 'https://github.com/juanjomalouu/UNIR-AWS'
+                git branch: 'master', url: 'https://github.com/juanjomalouu/UNIR-AWS'
                 sh 'dir'
                 echo WORKSPACE
             }
         }
-        
-        stage('Static Test') {
-            steps {
-                println "=========================================== FLAKE8 ==========================================="
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                      sh '''
-                        dir
-                        ls -l /home/ubuntu/.local/bin/flake8
-                        export PATH=$PATH:/home/ubuntu/.local/bin
-                        flake8 --exit-zero --format=pylint src
-                    '''
-                    recordIssues( 
-                        tools: [flake8(name: 'Flake8', pattern: 'flake8.out')], 
-                        qualityGates: [], 
-                        ignoreQualityGate: true
-                    )
-                }
-                println "=========================================== BANDIT ==========================================="
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    sh '''
-                        dir
-                        ls -l /home/ubuntu/.local/bin/flake8
-                        export PATH=/home/ubuntu/.local/bin
-                        bandit --exit-zero -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
-                    '''
-                    recordIssues(
-                        tools: [pyLint(name: 'Bandit', pattern: 'bandit.out')], 
-                        qualityGates: [],
-                        ignoreQualityGate: true
-                    )
-                }
-            }
-        }
-        
-        
-        
         stage('Deploy')
         {
             steps
@@ -81,11 +45,11 @@ pipeline {
                         git config pull.rebase false
                         git remote set-url origin https://juanjomalouu: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@github.com/juanjomalouu/UNIR-AWS.git
                 
-                    
-                        git checkout master
-                        git pull origin master
-                        git merge --no-ff develop -m "Promoting develop to master"
-                        git push origin master
+              
+                        git checkout production
+                        git pull origin production
+                        git merge --no-ff master -m "Promoting master to production"
+                        git push origin production
                     '''
                 }
             }
