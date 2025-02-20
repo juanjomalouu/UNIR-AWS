@@ -5,3 +5,5 @@ tests
 pyenvunittests
 .coverage
 coverage.xml
+JENKINSFILE
+JENKINSFILE_agentes
