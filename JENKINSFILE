@@ -9,7 +9,6 @@ pipeline {
                 echo WORKSPACE
             }
         }
-        
         stage('Deploy')
         {
             steps
@@ -46,7 +45,7 @@ pipeline {
                         git config pull.rebase false
                         git remote set-url origin https://juanjomalouu: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@github.com/juanjomalouu/UNIR-AWS.git
                 
-                    
+              
                         git checkout production
                         git pull origin production
                         git merge --no-ff master -m "Promoting master to production"
