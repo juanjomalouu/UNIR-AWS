@@ -4,11 +4,11 @@ pipeline {
     stages {
         stage('Get Code') {
             steps {
-                //Obtener código del repo
+                // Obtener código del repo
                 git branch: 'develop', url: 'https://github.com/juanjomalouu/UNIR-AWS'
                 sh 'dir'
                 echo WORKSPACE
-                stash name: 'code', includes '**'
+                stash name: 'code', includes: '**'
             }
         }
         
