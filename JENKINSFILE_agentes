@@ -7,6 +7,7 @@ pipeline {
                 git branch: 'develop', url: 'https://github.com/juanjomalouu/UNIR-AWS'
                 sh 'dir'
                 echo WORKSPACE
+                stash name: 'code', includes '**'
             }
         }
         
@@ -14,6 +15,7 @@ pipeline {
             agent { label 'Node1' }
             steps {
                 println "=========================================== FLAKE8 ==========================================="
+                unstash 'code'
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                       sh '''
                         dir
@@ -76,6 +78,7 @@ pipeline {
                 script {
                     withEnv(["BASE_URL=${BASE_URL}"])
                     {
+                        unstash 'code'
                         sh '''
                             echo hola
                             export PATH=/home/ubuntu/.local/bin
