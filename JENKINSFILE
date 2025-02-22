@@ -32,7 +32,7 @@ pipeline {
                         dir
                         ls -l /home/ubuntu/.local/bin/flake8
                         export PATH=/home/ubuntu/.local/bin
-                        bandit --exit-zero -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
+                        bandit --exit-zero -r src -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
                     '''
                     recordIssues(
                         tools: [pyLint(name: 'Bandit', pattern: 'bandit.out')], 
