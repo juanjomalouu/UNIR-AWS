@@ -1,5 +1,5 @@
+BASE_URL = ""
 pipeline {
-    agent any
     stages {
         stage('Get Code') {
             steps {
@@ -11,6 +11,7 @@ pipeline {
         }
         
         stage('Static Test') {
+            agent { label 'Node1' }
             steps {
                 println "=========================================== FLAKE8 ==========================================="
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
@@ -32,7 +33,7 @@ pipeline {
                         dir
                         ls -l /home/ubuntu/.local/bin/flake8
                         export PATH=/home/ubuntu/.local/bin
-                        bandit --exit-zero -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
+                        bandit --exit-zero -r src -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
                     '''
                     recordIssues(
                         tools: [pyLint(name: 'Bandit', pattern: 'bandit.out')], 
@@ -42,30 +43,46 @@ pipeline {
                 }
             }
         }
-        
-        
-        
         stage('Deploy')
         {
             steps
             {
-                sh '''
-                    sam build
-                    sam deploy --config-file samconfig.toml --config-env staging --force-upload --no-fail-on-empty-changeset
-                '''
-                
+                script
+                {
+                    def validateResult = sh(script: 'sam validate --region us-east-1', returnStatus: true)
+                    if (validateResult == 0) {
+                        echo 'Template válido'
+                    
+                        sh '''
+                            sam build
+                            sam deploy --config-file samconfig.toml --config-env staging --force-upload --no-fail-on-empty-changeset
+                        '''
+                        BASE_URL = sh(script: "aws cloudformation describe-stacks --stack-name todo-list-aws-staging --query \"Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue\" --output text", returnStdout: true).trim()
+                        echo "BASE_URL: ${BASE_URL}"
+                    }
+                    else
+                    {
+                        error 'Fallo en la validación.'
+                    }
+                }
             }
         }
         
         stage('Rest Test')
         {
+            agent { label 'Node2' }
             steps
             {
-                sh '''
-                    echo hola
-                    export PATH=/home/ubuntu/.local/bin
-                    pytest test/integration/todoApiTest.py -v
-                '''
+                script {
+                    withEnv(["BASE_URL=${BASE_URL}"])
+                    {
+                        sh '''
+                            echo hola
+                            export PATH=/home/ubuntu/.local/bin
+                            pytest test/integration/todoApiTest.py -v
+                        '''
+                    }
+                }
             }
         }
         
@@ -74,17 +91,15 @@ pipeline {
             //Marcar version como Release
             steps
             {
-                withCredentials([usernamePassword(credentialsId: 'a2b942a5-c878-4234-a8a1-d518bd74e290', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {   
+                withCredentials([string(credentialsId: 'GIT_PAT', variable: 'GIT_PAT')]) {   
                     sh '''
                         git config --global user.email "abadjuanjo@hotmail.com"
                         git config --global user.name "juanjomalouu"
-                        git update-index --skip-worktree JENKINSFILE
-                        git update-index --skip-worktree JENKINSFILE_agentes
+                        git config --global merge.ours.driver true
                         git config pull.rebase false
-                        git remote set-url origin https://juanjomalouu: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@github.com/juanjomalouu/UNIR-AWS.git
-                
-                    
+                        git remote set-url origin https://juanjomalouu:${GIT_PAT}@github.com/juanjomalouu/UNIR-AWS.git
                         git checkout master
+                        
                         git pull origin master
                         
                         git merge --no-ff develop -m "Promoting develop to master"
@@ -93,7 +108,5 @@ pipeline {
                 }
             }
         }
-        
-
     }
 }
