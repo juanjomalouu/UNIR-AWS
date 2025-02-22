@@ -42,18 +42,28 @@ pipeline {
                 }
             }
         }
-        
-        
-        
         stage('Deploy')
         {
             steps
             {
-                sh '''
-                    sam build
-                    sam deploy --config-file samconfig.toml --config-env staging --force-upload --no-fail-on-empty-changeset
-                '''
-                
+                script
+                {
+                    def validateResult = sh(script: 'sam validate --region us-east-1', returnStatus: true)
+                    if (validateResult == 0) {
+                        echo 'Template válido'
+                    
+                        sh '''
+                            sam build
+                            sam deploy --config-file samconfig.toml --config-env staging --force-upload --no-fail-on-empty-changeset
+                        '''
+                        BASE_URL = sh(script: "aws cloudformation describe-stacks --stack-name todo-list-aws-staging --query \"Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue\" --output text", returnStdout: true).trim()
+                        echo "BASE_URL: ${BASE_URL}"
+                    }
+                    else
+                    {
+                        error 'Fallo en la validación.'
+                    }
+                }
             }
         }
         
@@ -61,11 +71,16 @@ pipeline {
         {
             steps
             {
-                sh '''
-                    echo hola
-                    export PATH=/home/ubuntu/.local/bin
-                    pytest test/integration/todoApiTest.py -v
-                '''
+                script {
+                    withEnv(["BASE_URL=${BASE_URL}"])
+                    {
+                        sh '''
+                            echo hola
+                            export PATH=/home/ubuntu/.local/bin
+                            pytest test/integration/todoApiTest.py -v
+                        '''
+                    }
+                }
             }
         }
         
@@ -91,7 +106,5 @@ pipeline {
                 }
             }
         }
-        
-
     }
 }
