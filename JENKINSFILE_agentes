@@ -5,7 +5,7 @@ pipeline {
         stage('Get Code') {
             steps {
                 // Obtener código del repo
-                git branch: 'develop', url: 'https://github.com/juanjomalouu/UNIR-AWS'
+                git branch: 'master', url: 'https://github.com/juanjomalouu/UNIR-AWS'
                 sh 'dir'
 
                 sh 'whoami'
