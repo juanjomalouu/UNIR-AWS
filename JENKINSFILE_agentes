@@ -71,6 +71,7 @@ pipeline {
                         sh 'whoami'
                         sh 'hostname'
                         sh '''
+                            cat samconfig.toml
                             sam build
                             sam deploy --config-file samconfig.toml --config-env staging --force-upload --no-fail-on-empty-changeset
                         '''
