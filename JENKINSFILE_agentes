@@ -13,7 +13,7 @@ pipeline {
                 echo WORKSPACE
                 stash name: 'samconfig', includes: 'samconfig.toml'
                 dir('configRepository'){
-                    git branch: 'staging', url: 'https://github.com/juanjomalouu/todo-list-aws-config'
+                    git branch: 'production', url: 'https://github.com/juanjomalouu/todo-list-aws-config'
                 }
                 
                 sh 'cp configRepository/samconfig.toml .'
