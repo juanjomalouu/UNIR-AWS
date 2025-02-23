@@ -16,7 +16,7 @@ pipeline {
             {
                 script
                 {
-                     def validateResult = sh(script: 'sam validate --region us-east-1', returnStatus: true)
+                    def validateResult = sh(script: 'sam validate --region us-east-1', returnStatus: true)
                     if (validateResult == 0) {
                         echo 'Template válido'                
                         sh '''
