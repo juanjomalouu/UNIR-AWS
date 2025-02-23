@@ -16,12 +16,20 @@ pipeline {
             {
                 script
                 {
-                    sh '''
-                        sam build
-                        sam deploy --config-file samconfig.toml --config-env production --force-upload --no-fail-on-empty-changeset
-                    '''
-                    BASE_URL = sh(script: "aws cloudformation describe-stacks --stack-name todo-list-aws-production --query \"Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue\" --output text", returnStdout: true).trim()
-                    echo "BASE_URL: ${BASE_URL}"
+                    def validateResult = sh(script: 'sam validate --region us-east-1', returnStatus: true)
+                    if (validateResult == 0) {
+                        echo 'Template válido'                
+                        sh '''
+                            sam build
+                            sam deploy --config-file samconfig.toml --config-env production --force-upload --no-fail-on-empty-changeset
+                        '''
+                        BASE_URL = sh(script: "aws cloudformation describe-stacks --stack-name todo-list-aws-production --query \"Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue\" --output text", returnStdout: true).trim()
+                        echo "BASE_URL: ${BASE_URL}"
+                    }
+                    else
+                    {
+                        echo 'Fallo en la validacion'
+                    }
                     
                 }
                 
