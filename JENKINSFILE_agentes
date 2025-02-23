@@ -33,6 +33,7 @@ pipeline {
                         sh 'hostname'
                         echo 'Template válido'                
                         sh '''
+                            cat samconfig.toml
                             sam build
                             sam deploy --config-file samconfig.toml --config-env production --force-upload --no-fail-on-empty-changeset
                         '''
