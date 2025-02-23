@@ -10,6 +10,13 @@ pipeline {
                 sh 'whoami'
                 sh 'hostname'
                 echo WORKSPACE
+                stash name: 'samconfig', includes 'samconfig.toml'
+                dir('configRepository'){
+                    git branch: 'staging', url: 'https://github.com/juanjomalouu/todo-list-aws-config'
+                }
+                
+                sh 'cp configRepository/samconfig.toml .'
+                
                 stash name: 'code', includes: '**'
             }
         }
@@ -106,7 +113,7 @@ pipeline {
             steps
             {
                 withCredentials([string(credentialsId: 'GIT_PAT', variable: 'GIT_PAT')]) {   
-                        
+                    unstash 'samconfig'
                     sh 'whoami'
                     sh 'hostname'
                     sh '''
