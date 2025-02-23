@@ -29,7 +29,7 @@ pipeline {
                     }
                     else
                     {
-                        echo 'Fallo en la validacion
+                        echo 'Fallo en la validacion'
                     }
                     
                 }
