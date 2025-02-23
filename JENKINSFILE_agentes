@@ -7,6 +7,9 @@ pipeline {
                 // Obtener código del repo
                 git branch: 'develop', url: 'https://github.com/juanjomalouu/UNIR-AWS'
                 sh 'dir'
+
+                sh 'whoami'
+                sh 'hostname'
                 echo WORKSPACE
                 stash name: 'code', includes: '**'
             }
@@ -19,7 +22,10 @@ pipeline {
                 {
                     def validateResult = sh(script: 'sam validate --region us-east-1', returnStatus: true)
                     if (validateResult == 0) {
-                        echo 'Template válido'                
+                        echo 'Template válido'           
+        
+                        sh 'whoami'
+                        sh 'hostname'
                         sh '''
                             sam build
                             sam deploy --config-file samconfig.toml --config-env production --force-upload --no-fail-on-empty-changeset
@@ -46,6 +52,9 @@ pipeline {
                     withEnv(["BASE_URL=${BASE_URL}"])
                     {
                         unstash 'code'
+                                
+                        sh 'whoami'
+                        sh 'hostname'
                         sh '''
                             echo hola
                             export PATH=/home/ubuntu/.local/bin
@@ -62,6 +71,9 @@ pipeline {
             steps
             {
                 withCredentials([string(credentialsId: 'GIT_PAT', variable: 'GIT_PAT')]) {   
+                        
+                    sh 'whoami'
+                    sh 'hostname'
                     sh '''
                         git config --global user.email "abadjuanjo@hotmail.com"
                         git config --global user.name "juanjomalouu"
