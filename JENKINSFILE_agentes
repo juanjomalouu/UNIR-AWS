@@ -10,7 +10,7 @@ pipeline {
                 sh 'whoami'
                 sh 'hostname'
                 echo WORKSPACE
-                stash name: 'samconfig', includes 'samconfig.toml'
+                stash name: 'samconfig', includes: 'samconfig.toml'
                 dir('configRepository'){
                     git branch: 'staging', url: 'https://github.com/juanjomalouu/todo-list-aws-config'
                 }
